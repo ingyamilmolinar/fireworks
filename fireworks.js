@@ -5,7 +5,7 @@ var SCREEN_WIDTH = window.innerWidth,
         y: 300
     },
 
-    MAX_PARTICLES = 200,
+    MAX_PARTICLES = 100,
     LAUNCH_INTERVAL_MS = 1000,
     LOOP_INTERVAL_MS = 25,
     ROCKETS_ONCLICK = 15,
@@ -30,8 +30,8 @@ $(document).ready(function() {
     context = canvas.getContext('2d'),
     canvas.width = SCREEN_WIDTH;
     canvas.height = SCREEN_HEIGHT;
-    launchTimer = setInterval(launch, LAUNCH_INTERVAL_MS);
     setInterval(loop, LOOP_INTERVAL_MS);
+    launch();
 });
 
 // sound
@@ -52,15 +52,17 @@ $(document).mousemove(function(e) {
 
 // launch more rockets!!!
 $(document).mousedown(function(e) {
-    clearInterval(launchTimer);
-    launchTimer = setInterval(launch, LAUNCH_INTERVAL_MS);
     for (var i = 0; i < ROCKETS_ONCLICK; i++) {
         launchFrom(Math.random() * SCREEN_WIDTH * 2 / 3 + SCREEN_WIDTH / 6, i == 0);
     }
 });
 
 function launch() {
+    var min = .15 * LAUNCH_INTERVAL_MS,
+        max = 1 * LAUNCH_INTERVAL_MS;
+    var rand = Math.floor(Math.random() * (max - min + 1) + min);
     launchFrom(mousePos.x, true);
+    setTimeout(launch, rand);
 }
 
 function launchFrom(x, useSound) {
@@ -102,17 +104,13 @@ function loop() {
         // calculate distance with Pythagoras
         var distance = Math.sqrt(Math.pow(mousePos.x - rockets[i].pos.x, 2) + Math.pow(mousePos.y - rockets[i].pos.y, 2));
 
-        // random chance of 1% if rockets is above the middle
-        //var randomChance = rockets[i].pos.y < (SCREEN_HEIGHT * 2 / 3) ? (Math.random() * 100 <= 1) : false;
-        var randomChance = false;
-
         /* Explosion rules
             - 80% of screen
             - going down
             - close to the mouse
             - 1% chance of random explosion
         */
-        if (rockets[i].pos.y < SCREEN_HEIGHT / 5 || rockets[i].vel.y >= 0 || distance < 50 || randomChance) {
+        if (rockets[i].pos.y < SCREEN_HEIGHT / 5 || rockets[i].vel.y >= 0 || distance < 50) {
             rockets[i].explode();
         } else {
             existingRockets.push(rockets[i]);
