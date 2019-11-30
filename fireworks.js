@@ -6,15 +6,23 @@ var SCREEN_WIDTH = window.innerWidth,
     },
 
     MAX_PARTICLES = 200,
-    LAUNCH_INTERVAL_MS = 400,
-    LOOP_INTERVAL_MS = 1000 / 50,
-    ROCKETS_ONCLICK = 20,
+    LAUNCH_INTERVAL_MS = 1000,
+    LOOP_INTERVAL_MS = 25,
+    ROCKETS_ONCLICK = 15,
     MAXIMUM_NUMBER_OF_ROCKETS = 20,
+    LAUNCH_SOUND_FILENAME = 'launch.mp3',
+    EXPLOSION_SOUND_FILENAME = 'explosion.mp3',
 
     // create canvas
     particles = [],
     rockets = [],
-    colorCode = 0;
+    colorCode = 0,
+
+    //sound
+    soundActivated = true,
+
+    //timer
+    launchTimer;
 
 // init
 $(document).ready(function() {
@@ -22,8 +30,15 @@ $(document).ready(function() {
     context = canvas.getContext('2d'),
     canvas.width = SCREEN_WIDTH;
     canvas.height = SCREEN_HEIGHT;
-    setInterval(launch, LAUNCH_INTERVAL_MS);
+    launchTimer = setInterval(launch, LAUNCH_INTERVAL_MS);
     setInterval(loop, LOOP_INTERVAL_MS);
+});
+
+// sound
+$(window).focus(function(){
+    soundActivated = true;
+}).blur(function(){
+    soundActivated = false;
 });
 
 // update mouse position
@@ -37,18 +52,23 @@ $(document).mousemove(function(e) {
 
 // launch more rockets!!!
 $(document).mousedown(function(e) {
+    clearInterval(launchTimer);
+    launchTimer = setInterval(launch, LAUNCH_INTERVAL_MS);
     for (var i = 0; i < ROCKETS_ONCLICK; i++) {
-        launchFrom(Math.random() * SCREEN_WIDTH * 2 / 3 + SCREEN_WIDTH / 6);
+        launchFrom(Math.random() * SCREEN_WIDTH * 2 / 3 + SCREEN_WIDTH / 6, i == 0);
     }
 });
 
 function launch() {
-    launchFrom(mousePos.x);
+    launchFrom(mousePos.x, true);
 }
 
-function launchFrom(x) {
+function launchFrom(x, useSound) {
     if (rockets.length < MAXIMUM_NUMBER_OF_ROCKETS) {
+
         var rocket = new Rocket(x);
+        
+        soundActivated && useSound && rocket.launchSound.play();
         rocket.explosionColor = Math.floor(Math.random() * 360 / 10) * 10;
         rocket.vel.y = Math.random() * -3 - 4;
         rocket.vel.x = Math.random() * 6 - 3;
@@ -83,10 +103,11 @@ function loop() {
         var distance = Math.sqrt(Math.pow(mousePos.x - rockets[i].pos.x, 2) + Math.pow(mousePos.y - rockets[i].pos.y, 2));
 
         // random chance of 1% if rockets is above the middle
-        var randomChance = rockets[i].pos.y < (SCREEN_HEIGHT * 2 / 3) ? (Math.random() * 100 <= 1) : false;
+        //var randomChance = rockets[i].pos.y < (SCREEN_HEIGHT * 2 / 3) ? (Math.random() * 100 <= 1) : false;
+        var randomChance = false;
 
         /* Explosion rules
-             - 80% of screen
+            - 80% of screen
             - going down
             - close to the mouse
             - 1% chance of random explosion
@@ -199,14 +220,18 @@ function Rocket(x) {
         y: SCREEN_HEIGHT}]);
 
     this.explosionColor = 0;
+    this.launchSound = new Audio(LAUNCH_SOUND_FILENAME);
+    this.explodeSound = new Audio(EXPLOSION_SOUND_FILENAME);
 }
 
 Rocket.prototype = new Particle();
 Rocket.prototype.constructor = Rocket;
 
 Rocket.prototype.explode = function() {
-    var count = Math.random() * 10 + 80;
+    
+    soundActivated && this.explodeSound.play();
 
+    var count = Math.random() * 10 + 80;
     for (var i = 0; i < count; i++) {
         var particle = new Particle(this.pos);
         var angle = Math.random() * Math.PI * 2;
