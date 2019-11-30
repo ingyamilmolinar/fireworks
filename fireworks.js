@@ -5,11 +5,16 @@ var SCREEN_WIDTH = window.innerWidth,
         y: 300
     },
 
-    MAX_PARTICLES = 100,
-    LAUNCH_INTERVAL_MS = 1000,
+    MAX_PARTICLES = 500,
+    PARTICLE_SIZE = 1,
+    PARTICLE_ALPHA = 1,
+    EXPLOSION_PARTICLE_SIZE = 5,
+    LAUNCH_INTERVAL_MS = 500,
     LOOP_INTERVAL_MS = 25,
-    ROCKETS_ONCLICK = 15,
-    MAXIMUM_NUMBER_OF_ROCKETS = 20,
+    ROCKETS_ONCLICK = 20,
+    MAXIMUM_NUMBER_OF_ROCKETS = 30,
+    ROCKET_EXPLOSION_DISTANCE_TO_POINTER = 50,
+    CANVAS_OPACITY = 0.10,
     LAUNCH_SOUND_FILENAME = 'launch.mp3',
     EXPLOSION_SOUND_FILENAME = 'explosion.mp3',
 
@@ -58,7 +63,7 @@ $(document).mousedown(function(e) {
 });
 
 function launch() {
-    var min = .15 * LAUNCH_INTERVAL_MS,
+    var min = .1 * LAUNCH_INTERVAL_MS,
         max = 1 * LAUNCH_INTERVAL_MS;
     var rand = Math.floor(Math.random() * (max - min + 1) + min);
     launchFrom(mousePos.x, true);
@@ -91,7 +96,7 @@ function loop() {
     }
 
     // clear canvas
-    context.fillStyle = "rgba(0, 0, 0, 0.15)";
+    context.fillStyle = `rgba(0, 0, 0, ${CANVAS_OPACITY})`;
     context.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     var existingRockets = [];
@@ -104,13 +109,8 @@ function loop() {
         // calculate distance with Pythagoras
         var distance = Math.sqrt(Math.pow(mousePos.x - rockets[i].pos.x, 2) + Math.pow(mousePos.y - rockets[i].pos.y, 2));
 
-        /* Explosion rules
-            - 80% of screen
-            - going down
-            - close to the mouse
-            - 1% chance of random explosion
-        */
-        if (rockets[i].pos.y < SCREEN_HEIGHT / 5 || rockets[i].vel.y >= 0 || distance < 50) {
+        // Explosion rules
+        if (rockets[i].pos.y < SCREEN_HEIGHT / 5 || rockets[i].vel.y >= 0 || distance < ROCKET_EXPLOSION_DISTANCE_TO_POINTER) {
             rockets[i].explode();
         } else {
             existingRockets.push(rockets[i]);
@@ -149,14 +149,14 @@ function Particle(pos) {
         y: 0
     };
     this.shrink = .97;
-    this.size = 2;
+    this.size = PARTICLE_SIZE;
 
     this.resistance = 1;
     this.gravity = 0;
 
     this.flick = false;
 
-    this.alpha = 1;
+    this.alpha = PARTICLE_ALPHA;
     this.fade = 0;
     this.color = 0;
 }
@@ -240,7 +240,7 @@ Rocket.prototype.explode = function() {
         particle.vel.x = Math.cos(angle) * speed;
         particle.vel.y = Math.sin(angle) * speed;
 
-        particle.size = 10;
+        particle.size = EXPLOSION_PARTICLE_SIZE;
 
         particle.gravity = 0.2;
         particle.resistance = 0.92;
@@ -267,8 +267,8 @@ Rocket.prototype.render = function(c) {
         r = this.size / 2;
 
     var gradient = c.createRadialGradient(x, y, 0.1, x, y, r);
-    gradient.addColorStop(0.1, "rgba(255, 255, 255 ," + this.alpha + ")");
-    gradient.addColorStop(1, "rgba(0, 0, 0, " + this.alpha + ")");
+    gradient.addColorStop(0.1, "rgba(255, 255, 255 ," + (this.alpha / 2) + ")");
+    gradient.addColorStop(0.5, "rgba(0, 0, 0, " + (this.alpha / 2) + ")");
 
     c.fillStyle = gradient;
 

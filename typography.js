@@ -53,7 +53,8 @@ var particleAlphabet = {
 			gridY = 6;
 		canvas.width = window.innerWidth;
 		canvas.height = window.innerHeight;
-		ctx.font = 'italic bold 330px Noto Serif';
+		//ctx.font = 'italic bold 330px Noto Serif';
+		ctx.font = '350px Teko';
 		ctx.fillText(keyword, canvas.width / 2 - ctx.measureText(keyword).width / 2, canvas.height / 2 + 100);
 		var idata = ctx.getImageData(0, 0, canvas.width, canvas.height);
 		var buffer32 = new Uint32Array(idata.data.buffer);
