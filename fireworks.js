@@ -89,7 +89,7 @@ function loop() {
     }
 
     // clear canvas
-    context.fillStyle = "rgba(0, 0, 0, 0.05)";
+    context.fillStyle = "rgba(0, 0, 0, 0.15)";
     context.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 
     var existingRockets = [];

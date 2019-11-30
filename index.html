@@ -14,15 +14,22 @@
             display: block;
         }
         body {
-            background-color: #000000;
             margin: 0px;
             overflow: hidden;
+        }
+        html { 
+            background: url(sky.jpg) no-repeat center center fixed; 
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
         }
     </style>
     <head>
         <meta charset="utf-8">
         <title>Fireworks!</title>
     </head>
-    <canvas></canvas>
+    <body>
+        <canvas style="background-image: url('sky.jpg');"></canvas>
     </body>
 </html>
